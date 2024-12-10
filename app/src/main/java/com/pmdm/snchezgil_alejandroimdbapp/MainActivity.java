@@ -7,32 +7,32 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.View;
 import android.view.Menu;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.pmdm.snchezgil_alejandroimdbapp.databinding.ActivityMainBinding;
+import com.pmdm.snchezgil_alejandroimdbapp.ui.home.LoginActivity;
 
 import androidx.annotation.NonNull;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.AppCompatActivity;
-
-import com.pmdm.snchezgil_alejandroimdbapp.databinding.ActivityMainBinding;
-import com.pmdm.snchezgil_alejandroimdbapp.ui.home.LoginActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -53,19 +53,21 @@ public class MainActivity extends AppCompatActivity {
     private ImageView imagen;
     private ExecutorService executorService;
     private Handler mainHandler;
+    private FirebaseAuth mAuth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser usuario = mAuth.getCurrentUser();
         executorService = Executors.newSingleThreadExecutor();
         mainHandler = new Handler(Looper.getMainLooper());
 
         gOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
         gClient = GoogleSignIn.getClient(this, gOptions);
-        GoogleSignInAccount gAccount = GoogleSignIn.getLastSignedInAccount(this);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
         setSupportActionBar(binding.appBarMain.toolbar);
         binding.appBarMain.fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -77,8 +79,6 @@ public class MainActivity extends AppCompatActivity {
         });
         DrawerLayout drawer = binding.drawerLayout;
         NavigationView navigationView = binding.navView;
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
                 .setOpenableLayout(drawer)
@@ -93,11 +93,11 @@ public class MainActivity extends AppCompatActivity {
         LogoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                mAuth.signOut();
                 gClient.signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
-                        finish();
-                        startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                        volverALogin();
                     }
                 });
             }
@@ -107,10 +107,10 @@ public class MainActivity extends AppCompatActivity {
         email = headerView.findViewById(R.id.email);
         imagen = headerView.findViewById(R.id.imageView);
 
-        if(gAccount != null) {
-            String nombreCuenta = gAccount.getDisplayName();
-            String emailCuenta = gAccount.getEmail();
-            Uri imagenCuenta = gAccount.getPhotoUrl();
+        if(usuario != null) {
+            String nombreCuenta = usuario.getDisplayName();
+            String emailCuenta = usuario.getEmail();
+            Uri imagenCuenta = usuario.getPhotoUrl();
 
             nombre.setText(nombreCuenta);
             email.setText(emailCuenta);
@@ -119,13 +119,18 @@ public class MainActivity extends AppCompatActivity {
                 executorService.execute(new DescargarImagen(imagenCuenta.toString(), imagen));
             }
 
+        }else{
+            volverALogin();
         }
     }
 
+    private void volverALogin(){
+        finish();
+        startActivity(new Intent(MainActivity.this, LoginActivity.class));
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
@@ -136,11 +141,11 @@ public class MainActivity extends AppCompatActivity {
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
     }
+
     private class DescargarImagen implements Runnable {
         private final String url;
         private final ImageView imageView;
 
-        // Constructor ajustado para aceptar la URL y el ImageView
         private DescargarImagen(String url, ImageView imageView) {
             this.url = url;
             this.imageView = imageView;
@@ -151,18 +156,8 @@ public class MainActivity extends AppCompatActivity {
             try {
                 byte[] imagenBytes = descargaImagen(url);
 
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inJustDecodeBounds = true;
-                BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length, options);
-
-                int anchoDeseado = 200;
-                int altoDeseado = 200;
-                int escala = Math.min(options.outWidth / anchoDeseado, options.outHeight / altoDeseado);
-                options.inJustDecodeBounds = false;
-                options.inSampleSize = escala;
-
-                Bitmap bitmap = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length, options);
-
+                BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length);
+                Bitmap bitmap = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length);
 
                 mainHandler.post(() -> imageView.setImageBitmap(bitmap));
 
@@ -172,7 +167,6 @@ public class MainActivity extends AppCompatActivity {
                         Toast.LENGTH_SHORT).show());
             }
         }
-
 
         private byte[] descargaImagen(String myurl) throws IOException {
             InputStream is = null;
@@ -219,5 +213,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
+    @Override
+    public void onStart() {
+        super.onStart();
+        FirebaseUser usuarioActual = mAuth.getCurrentUser();
+        if(usuarioActual == null){
+            volverALogin();
+        }
+    }
 }
