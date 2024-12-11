@@ -1,4 +1,4 @@
-package com.pmdm.snchezgil_alejandroimdbapp.ui.home;
+package com.pmdm.snchezgil_alejandroimdbapp;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -26,8 +26,6 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.pmdm.snchezgil_alejandroimdbapp.MainActivity;
-import com.pmdm.snchezgil_alejandroimdbapp.R;
 
 public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
