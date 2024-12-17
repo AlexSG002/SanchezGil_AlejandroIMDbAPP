@@ -1,12 +1,18 @@
 package com.pmdm.snchezgil_alejandroimdbapp;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.pmdm.snchezgil_alejandroimdbapp.models.Movie;
 
@@ -19,8 +25,11 @@ import java.util.concurrent.Executors;
 public class MovieDetailsActivity extends AppCompatActivity {
 
     private ImageView imagePosterLarge;
-    private TextView textTitle, textRank;
+    private TextView textTitle, textRank, textPlot;
     private ExecutorService executorService;
+    private Button buttonEnviar;
+    private static final int CODIGO_PERMISO_LEER_CONTACTOS = 1;
+    private static final int CODIGO_PERMISO_ENVIAR_SMS = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +39,23 @@ public class MovieDetailsActivity extends AppCompatActivity {
         imagePosterLarge = findViewById(R.id.imagePosterLarge);
         textTitle = findViewById(R.id.textTitle);
         textRank = findViewById(R.id.textRank);
+        textPlot = findViewById(R.id.textPlot);
+        buttonEnviar = findViewById(R.id.buttonEnviarSMS);
+
+        buttonEnviar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                /*
+                if (ContextCompat.checkSelfPermission(MovieDetailsActivity.this, android.Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(MovieDetailsActivity.this, new String[]{android.Manifest.permission.READ_CONTACTS}, CODIGO_PERMISO_LEER_CONTACTOS);
+                }
+
+                if (ContextCompat.checkSelfPermission(MovieDetailsActivity.this, android.Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(MovieDetailsActivity.this, new String[]{Manifest.permission.SEND_SMS}, CODIGO_PERMISO_ENVIAR_SMS);
+                }
+                */
+            }
+        });
 
         executorService = Executors.newSingleThreadExecutor();
 
@@ -38,6 +64,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         if (movie != null) {
             textTitle.setText(movie.getTitle() != null ? movie.getTitle() : "Sin título");
             textRank.setText("Rank: " + movie.getRank());
+            textPlot.setText("Descripción: "+movie.getDescripcion());
 
             executorService.execute(() -> {
                 try {

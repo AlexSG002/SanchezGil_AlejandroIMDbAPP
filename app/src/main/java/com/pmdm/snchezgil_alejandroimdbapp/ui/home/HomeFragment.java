@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +45,9 @@ public class HomeFragment extends Fragment {
     private static final String BASE_URL = "https://imdb-com.p.rapidapi.com/";
     private static final String API_KEY = "200ca2873dmsh3c28ce355613a89p1dd78cjsndb8f2f9c0b09";
     private static final String HOST = "imdb-com.p.rapidapi.com";
-    private static final String ENDPOINT = "title/get-top-meter?topMeterTitlesType=ALL";
+    private static final String ENDPOINT_TOP10 = "title/get-top-meter?topMeterTitlesType=ALL";
+    private static final String ENDPOINT_DESCRIPCION = "title/get-overview?tconst=";
+    private static List<Movie> peliculasCargadas = new ArrayList<>();
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -55,18 +59,76 @@ public class HomeFragment extends Fragment {
         executorService = Executors.newSingleThreadExecutor();
         mainHandler = new Handler(Looper.getMainLooper());
 
-        // Usamos un GridLayoutManager con 2 columnas
         GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 2);
         binding.recyclerView.setLayoutManager(layoutManager);
 
         cargarTopMovies();
+        cargarDescripciones();
+
+
         return root;
+    }
+
+    private void cargarDescripciones(){
+        executorService.execute(() ->{
+            for(Movie movie : peliculasCargadas) {
+                try {
+                    String urlString = BASE_URL + ENDPOINT_DESCRIPCION+movie.getId();
+                    URL url = new URL(urlString);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("GET");
+                    conn.setRequestProperty("x-rapidapi-key", API_KEY);
+                    conn.setRequestProperty("x-rapidapi-host", HOST);
+                    conn.setConnectTimeout(15000);
+                    conn.setReadTimeout(10000);
+                    conn.connect();
+                    int responseCode = conn.getResponseCode();
+                    if (responseCode == HttpURLConnection.HTTP_OK) {
+                        String response = convertStreamToString(conn.getInputStream());
+                        conn.disconnect();
+
+                        Log.d("HomeFragment", "Response: " + response);
+
+                        Gson gson = new Gson();
+                        JsonObject jsonObject = gson.fromJson(response, JsonObject.class);
+                        JsonObject dataObject = jsonObject.getAsJsonObject("data");
+                        JsonObject titleObject = dataObject.getAsJsonObject("title");
+                        JsonObject plotObject = titleObject.getAsJsonObject("plot");
+
+                        String id = titleObject.get("id").getAsString();
+                        String plotText = plotObject.getAsJsonObject("plotText").get("plainText").getAsString();
+                        Movie movieDesc = new Movie();
+                        movieDesc.setId(id);
+                        movieDesc.setDescripcion(plotText);
+
+                        List<Movie> peliculasDescripcion = new ArrayList<>();
+
+                        peliculasDescripcion.add(movieDesc);
+                        for (Movie m : peliculasCargadas) {
+                            for (Movie m1 : peliculasDescripcion) {
+                                if (m.getId().equals(m1.getId())) {
+                                   m.setDescripcion(m1.getDescripcion());
+                                }
+                            }
+                        }
+                    }
+
+
+                } catch (ProtocolException e) {
+                    throw new RuntimeException(e);
+                } catch (MalformedURLException e) {
+                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 
     private void cargarTopMovies() {
         executorService.execute(() -> {
             try {
-                String urlString = BASE_URL + ENDPOINT;
+                String urlString = BASE_URL + ENDPOINT_TOP10;
                 URL url = new URL(urlString);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
@@ -95,15 +157,23 @@ public class HomeFragment extends Fragment {
                         JsonObject edgeObject = edgeElement.getAsJsonObject();
                         JsonObject nodeObject = edgeObject.getAsJsonObject("node");
 
-                        // Solo necesitamos la imagen para la carátula
+                        String id = nodeObject.get("id").getAsString();
+                        int rank = nodeObject.getAsJsonObject("meterRanking").get("currentRank").getAsInt();
+                        String titulo = nodeObject.getAsJsonObject("titleText").get("text").getAsString();
                         String imageUrl = nodeObject.getAsJsonObject("primaryImage").get("url").getAsString();
 
                         Movie movie = new Movie();
                         movie.setImageUrl(imageUrl);
+                        movie.setTitle(titulo);
+                        movie.setRank(rank);
+                        movie.setId(id);
                         movies.add(movie);
+
+                        peliculasCargadas = movies;
+
                     }
 
-                    // Tomar sólo top 10 si hay más
+
                     if (movies.size() > 10) {
                         movies = movies.subList(0, 10);
                     }
@@ -132,6 +202,7 @@ public class HomeFragment extends Fragment {
             }
         });
     }
+
 
     private String convertStreamToString(InputStream is) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));

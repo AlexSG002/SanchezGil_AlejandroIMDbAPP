@@ -47,7 +47,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
     public void onBindViewHolder(@NonNull ViewHolder holder, int position){
         Movie movie = movies.get(position);
 
-        // Cargar la imagen en segundo plano
         executorService.execute(() -> {
             try {
                 URL url = new URL(movie.getImageUrl());
@@ -62,10 +61,9 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
             }
         });
 
-        // Click listener
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, MovieDetailsActivity.class);
-            intent.putExtra("MOVIE", movie); // Movie es parcelable
+            intent.putExtra("MOVIE", movie);
             context.startActivity(intent);
         });
     }
