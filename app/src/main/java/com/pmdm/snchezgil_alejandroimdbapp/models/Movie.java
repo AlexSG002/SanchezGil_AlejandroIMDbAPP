@@ -9,6 +9,7 @@ public class Movie implements Parcelable {
     private int rank;
     private String id;
     private String descripcion;
+    private String fecha;
 
     public Movie() {}
 
@@ -18,6 +19,7 @@ public class Movie implements Parcelable {
         rank = in.readInt();
         id = in.readString();
         descripcion = in.readString();
+        fecha = in.readString();
     }
 
     public static final Creator<Movie> CREATOR = new Creator<Movie>() {
@@ -52,6 +54,9 @@ public class Movie implements Parcelable {
         this.descripcion = descripcion;
     }
 
+    public String getFecha() { return fecha; }
+    public void setFecha(String fecha) { this.fecha = fecha; }
+
     @Override
     public int describeContents() {
         return 0;
@@ -64,5 +69,6 @@ public class Movie implements Parcelable {
         parcel.writeInt(rank);
         parcel.writeString(id);
         parcel.writeString(descripcion);
+        parcel.writeString(fecha);
     }
 }

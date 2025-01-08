@@ -1,6 +1,7 @@
 package com.pmdm.snchezgil_alejandroimdbapp;
 
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -79,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(navigationView, navController);
 
         View headerView = navigationView.getHeaderView(0);
+
 
         Button LogoutButton = headerView.findViewById(R.id.buttonLogout);
         LogoutButton.setOnClickListener(new View.OnClickListener() {
