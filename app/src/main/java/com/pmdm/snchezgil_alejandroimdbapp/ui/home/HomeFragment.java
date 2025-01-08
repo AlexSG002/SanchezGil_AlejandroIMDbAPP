@@ -53,6 +53,7 @@ public class HomeFragment extends Fragment {
     private static final String ENDPOINT_DESCRIPCION = "title/get-overview?tconst=";
     private static List<Movie> peliculasCargadas = new ArrayList<>();
     private FavoritesDatabaseHelper database;
+    private boolean favoritos = false;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -193,7 +194,7 @@ public class HomeFragment extends Fragment {
                     final List<Movie> finalMovies = movies;
                     mainHandler.post(() -> {
                         if (finalMovies != null && !finalMovies.isEmpty()) {
-                            MovieAdapter adapter = new MovieAdapter(getContext(), finalMovies, idUsuario, database);
+                            MovieAdapter adapter = new MovieAdapter(getContext(), finalMovies, idUsuario, database, favoritos);
                             binding.recyclerView.setAdapter(adapter);
                         } else {
                             Toast.makeText(getContext(), "No se pudieron obtener las películas", Toast.LENGTH_SHORT).show();

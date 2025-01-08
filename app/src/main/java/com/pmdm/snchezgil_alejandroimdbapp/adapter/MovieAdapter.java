@@ -36,11 +36,13 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
     private Handler mainHandler = new Handler();
     private String idUsuario;
     private FavoritesDatabaseHelper database;
-    public MovieAdapter(Context context, List<Movie> movies, String idUsuario, FavoritesDatabaseHelper database){
+    private boolean favoritos;
+    public MovieAdapter(Context context, List<Movie> movies, String idUsuario, FavoritesDatabaseHelper database, boolean favoritos){
         this.context = context;
         this.movies = movies;
         this.idUsuario = idUsuario;
         this.database = database;
+        this.favoritos = favoritos;
     }
 
     @NonNull
@@ -52,6 +54,8 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position){
+        FavoritesDatabaseHelper database = new FavoritesDatabaseHelper(context);
+        SQLiteDatabase db = database.getWritableDatabase();
         Movie movie = movies.get(position);
 
         executorService.execute(() -> {
@@ -75,10 +79,18 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
         });
 
         holder.itemView.setOnLongClickListener(v -> {
-            FavoritesDatabaseHelper database = new FavoritesDatabaseHelper(context);
-            SQLiteDatabase db = database.getWritableDatabase();
-            database.insertarFavorito(db, idUsuario, movie.getId(),movie.getTitle(),movie.getDescripcion(), movie.getFecha(), movie.getRank(), movie.getImageUrl());
-            Toast.makeText(context,"Se ha agregado a favoritos: "+movie.getTitle(),Toast.LENGTH_SHORT).show();
+            if(!favoritos){
+                database.insertarFavorito(db, idUsuario, movie.getId(),movie.getTitle(),movie.getDescripcion(), movie.getFecha(), movie.getRank(), movie.getImageUrl());
+                Toast.makeText(context,"Se ha agregado a favoritos: "+movie.getTitle(),Toast.LENGTH_SHORT).show();
+            }else{
+                int filasBorradas = db.delete(FavoritesDatabaseHelper.TABLE_FAVORITOS, "idUsuario=? AND idPelicula=?",
+                        new String[]{idUsuario, movie.getId()});
+                if(filasBorradas>0){
+                    Toast.makeText(context,"Se ha eliminado de favoritos: "+movie.getTitle(),Toast.LENGTH_SHORT).show();
+                    movies.remove(position);
+                    notifyItemRemoved(position);
+                }
+            }
             return true;
         });
 

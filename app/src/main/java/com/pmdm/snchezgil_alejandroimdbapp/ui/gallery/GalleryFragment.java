@@ -31,7 +31,8 @@ public class GalleryFragment extends Fragment {
     private ExecutorService executorService;
     private Handler mainHandler;
 
-    private String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    private boolean favoritos = true;
+    private String idUsuario = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -57,7 +58,7 @@ public class GalleryFragment extends Fragment {
 
             Cursor cursor = db.rawQuery(
                     "SELECT * FROM " + FavoritesDatabaseHelper.TABLE_FAVORITOS + " WHERE idUsuario=?",
-                    new String[]{userId}
+                    new String[]{idUsuario}
             );
 
             List<Movie> pelisFavoritas = new ArrayList<>();
@@ -70,7 +71,6 @@ public class GalleryFragment extends Fragment {
                     int colFecha = cursor.getColumnIndex("fechaLanzamiento");
                     int colRanking = cursor.getColumnIndex("rankingPelicula");
                     int colCaratula = cursor.getColumnIndex("caratulaURL");
-
                     String idPelicula = cursor.getString(colIdPelicula);
                     String titulo = cursor.getString(colTitulo);
                     String descripcion = cursor.getString(colDescripcion);
@@ -85,7 +85,6 @@ public class GalleryFragment extends Fragment {
                     movie.setFecha(fecha);
                     movie.setRank(ranking);
                     movie.setImageUrl(caratula);
-
                     pelisFavoritas.add(movie);
                 } while (cursor.moveToNext());
             }
@@ -97,7 +96,7 @@ public class GalleryFragment extends Fragment {
 
             mainHandler.post(() -> {
                 if (!pelisFavoritas.isEmpty()) {
-                    MovieAdapter adapter = new MovieAdapter(getContext(), pelisFavoritas, userId, database);
+                    MovieAdapter adapter = new MovieAdapter(getContext(), pelisFavoritas, idUsuario, database, favoritos);
                     binding.recyclerViewFavoritos.setAdapter(adapter);
                 } else {
                     Toast.makeText(getContext(), "No tienes películas favoritas guardadas", Toast.LENGTH_SHORT).show();

@@ -59,5 +59,4 @@ public class FavoritesDatabaseHelper extends SQLiteOpenHelper {
         return db.insert(TABLE_FAVORITOS, null, valores);
     }
 
-
 }
