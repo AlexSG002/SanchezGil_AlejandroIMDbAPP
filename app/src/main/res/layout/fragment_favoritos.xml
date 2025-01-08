@@ -9,4 +9,10 @@
         android:id="@+id/recyclerViewFavoritos"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
+
+    <Button
+        android:id="@+id/buttonCompartir"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Compartir" />
 </LinearLayout>

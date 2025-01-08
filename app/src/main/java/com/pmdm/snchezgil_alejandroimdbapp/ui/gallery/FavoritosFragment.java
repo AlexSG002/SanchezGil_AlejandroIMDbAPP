@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.pmdm.snchezgil_alejandroimdbapp.adapter.MovieAdapter;
 import com.pmdm.snchezgil_alejandroimdbapp.database.FavoritesDatabaseHelper;
-import com.pmdm.snchezgil_alejandroimdbapp.databinding.FragmentGalleryBinding;
+import com.pmdm.snchezgil_alejandroimdbapp.databinding.FragmentFavoritosBinding;
 import com.pmdm.snchezgil_alejandroimdbapp.models.Movie;
 
 import java.util.ArrayList;
@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class GalleryFragment extends Fragment {
+public class FavoritosFragment extends Fragment {
 
-    private FragmentGalleryBinding binding;
+    private FragmentFavoritosBinding binding;
     private ExecutorService executorService;
     private Handler mainHandler;
 
@@ -37,7 +37,7 @@ public class GalleryFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        binding = FragmentGalleryBinding.inflate(inflater, container, false);
+        binding = FragmentFavoritosBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
         executorService = Executors.newSingleThreadExecutor();
