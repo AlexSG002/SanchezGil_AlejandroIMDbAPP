@@ -1,5 +1,6 @@
 package com.pmdm.snchezgil_alejandroimdbapp.ui.home;
 
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -14,11 +15,13 @@ import androidx.fragment.app.Fragment;
 
 import androidx.recyclerview.widget.GridLayoutManager;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.pmdm.snchezgil_alejandroimdbapp.adapter.MovieAdapter;
+import com.pmdm.snchezgil_alejandroimdbapp.database.FavoritesDatabaseHelper;
 import com.pmdm.snchezgil_alejandroimdbapp.databinding.FragmentHomeBinding;
 import com.pmdm.snchezgil_alejandroimdbapp.models.Movie;
 
@@ -41,13 +44,16 @@ public class HomeFragment extends Fragment {
     private FragmentHomeBinding binding;
     private ExecutorService executorService;
     private Handler mainHandler;
-
+    private String idUsuario = FirebaseAuth.getInstance().getCurrentUser().getUid();
     private static final String BASE_URL = "https://imdb-com.p.rapidapi.com/";
-    private static final String API_KEY = "200ca2873dmsh3c28ce355613a89p1dd78cjsndb8f2f9c0b09";
+    //private static final String API_KEY = "200ca2873dmsh3c28ce355613a89p1dd78cjsndb8f2f9c0b09";
+    private static final String API_KEY = "ab93ab0e94mshebd8e2eb069c3e5p12c6b7jsn40f5cdaf18f8";
     private static final String HOST = "imdb-com.p.rapidapi.com";
     private static final String ENDPOINT_TOP10 = "title/get-top-meter?topMeterTitlesType=ALL";
     private static final String ENDPOINT_DESCRIPCION = "title/get-overview?tconst=";
     private static List<Movie> peliculasCargadas = new ArrayList<>();
+    private FavoritesDatabaseHelper database;
+    private boolean favoritos = false;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -55,6 +61,9 @@ public class HomeFragment extends Fragment {
 
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+
+        database = new FavoritesDatabaseHelper(getContext());
+        SQLiteDatabase db = database.getWritableDatabase();
 
         executorService = Executors.newSingleThreadExecutor();
         mainHandler = new Handler(Looper.getMainLooper());
@@ -161,12 +170,16 @@ public class HomeFragment extends Fragment {
                         int rank = nodeObject.getAsJsonObject("meterRanking").get("currentRank").getAsInt();
                         String titulo = nodeObject.getAsJsonObject("titleText").get("text").getAsString();
                         String imageUrl = nodeObject.getAsJsonObject("primaryImage").get("url").getAsString();
+                        String mes = nodeObject.getAsJsonObject("releaseDate").get("month").getAsString();
+                        String dia = nodeObject.getAsJsonObject("releaseDate").get("day").getAsString();
+                        String year = nodeObject.getAsJsonObject("releaseDate").get("year").getAsString();
 
                         Movie movie = new Movie();
                         movie.setImageUrl(imageUrl);
                         movie.setTitle(titulo);
                         movie.setRank(rank);
                         movie.setId(id);
+                        movie.setFecha(dia+"-"+mes+"-"+year);
                         movies.add(movie);
 
                         peliculasCargadas = movies;
@@ -181,7 +194,7 @@ public class HomeFragment extends Fragment {
                     final List<Movie> finalMovies = movies;
                     mainHandler.post(() -> {
                         if (finalMovies != null && !finalMovies.isEmpty()) {
-                            MovieAdapter adapter = new MovieAdapter(getContext(), finalMovies);
+                            MovieAdapter adapter = new MovieAdapter(getContext(), finalMovies, idUsuario, database, favoritos);
                             binding.recyclerView.setAdapter(adapter);
                         } else {
                             Toast.makeText(getContext(), "No se pudieron obtener las películas", Toast.LENGTH_SHORT).show();

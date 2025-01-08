@@ -33,7 +33,7 @@ import java.util.concurrent.Executors;
 public class MovieDetailsActivity extends AppCompatActivity {
 
     private ImageView imagePosterLarge;
-    private TextView textTitle, textRank, textPlot;
+    private TextView textTitle, textRank, textPlot, textDate;
     private ExecutorService executorService;
     private Button buttonEnviar;
     private static final int CODIGO_PERMISO_LEER_CONTACTOS = 1;
@@ -52,6 +52,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         textTitle = findViewById(R.id.textTitle);
         textRank = findViewById(R.id.textRank);
         textPlot = findViewById(R.id.textPlot);
+        textDate = findViewById(R.id.textDate);
         buttonEnviar = findViewById(R.id.buttonEnviarSMS);
 
         launcherSeleccionarContacto = registerForActivityResult(
@@ -96,6 +97,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
             textTitle.setText(movie.getTitle() != null ? movie.getTitle() : "Sin título");
             textRank.setText("Rank: " + movie.getRank());
             textPlot.setText("Descripción: "+movie.getDescripcion());
+            textDate.setText("Fecha de lanzamiento: "+movie.getFecha());
 
             executorService.execute(() -> {
                 try {
