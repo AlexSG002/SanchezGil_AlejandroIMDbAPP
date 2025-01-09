@@ -15,7 +15,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.pmdm.snchezgil_alejandroimdbapp.MainActivity;
 import com.pmdm.snchezgil_alejandroimdbapp.MovieDetailsActivity;
 import com.pmdm.snchezgil_alejandroimdbapp.R;
 import com.pmdm.snchezgil_alejandroimdbapp.database.FavoritesDatabaseHelper;
@@ -35,14 +34,16 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
     private Handler mainHandler = new Handler();
     private String idUsuario;
-    private FavoritesDatabaseHelper database;
+    private FavoritesDatabaseHelper databaseHelper;
     private boolean favoritos;
-    public MovieAdapter(Context context, List<Movie> movies, String idUsuario, FavoritesDatabaseHelper database, boolean favoritos){
+
+    public MovieAdapter(Context context, List<Movie> movies, String idUsuario, FavoritesDatabaseHelper databaseHelper, boolean favoritos){
         this.context = context;
         this.movies = movies;
         this.idUsuario = idUsuario;
-        this.database = database;
+        this.databaseHelper = databaseHelper;
         this.favoritos = favoritos;
+
     }
 
     @NonNull
@@ -54,10 +55,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position){
-        FavoritesDatabaseHelper database = new FavoritesDatabaseHelper(context);
-        SQLiteDatabase db = database.getWritableDatabase();
         Movie movie = movies.get(position);
-
         executorService.execute(() -> {
             try {
                 URL url = new URL(movie.getImageUrl());
@@ -79,21 +77,16 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
         });
 
         holder.itemView.setOnLongClickListener(v -> {
-            if(!favoritos){
-                database.insertarFavorito(db, idUsuario, movie.getId(),movie.getTitle(),movie.getDescripcion(), movie.getFecha(), movie.getRank(), movie.getImageUrl());
-                Toast.makeText(context,"Se ha agregado a favoritos: "+movie.getTitle(),Toast.LENGTH_SHORT).show();
-            }else{
-                int filasBorradas = db.delete(FavoritesDatabaseHelper.TABLE_FAVORITOS, "idUsuario=? AND idPelicula=?",
-                        new String[]{idUsuario, movie.getId()});
-                if(filasBorradas>0){
-                    Toast.makeText(context,"Se ha eliminado de favoritos: "+movie.getTitle(),Toast.LENGTH_SHORT).show();
-                    movies.remove(position);
-                    notifyItemRemoved(position);
+            executorService.execute(() -> {
+                if (!favoritos) {
+                    agregarFavorito(movie, holder.getAdapterPosition());
+                } else {
+                    eliminarFavorito(movie, holder.getAdapterPosition());
                 }
-            }
+            });
+
             return true;
         });
-
     }
 
     @Override
@@ -106,6 +99,44 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
         public ViewHolder(@NonNull View itemView){
             super(itemView);
             posterImageView = itemView.findViewById(R.id.posterImageView);
+        }
+    }
+
+    private void agregarFavorito(Movie movie, int position) {
+        SQLiteDatabase dbWrite = databaseHelper.getWritableDatabase();
+        long result = databaseHelper.insertarFavorito(dbWrite, idUsuario, movie.getId(), movie.getTitle(), movie.getDescripcion(), movie.getFecha(), movie.getRank(), movie.getImageUrl());
+        dbWrite.close();
+
+        if (result != -1) {
+            mainHandler.post(() ->
+                    Toast.makeText(context, "Se ha agregado a favoritos: " + movie.getTitle(), Toast.LENGTH_SHORT).show()
+            );
+        } else {
+            mainHandler.post(() ->
+                    Toast.makeText(context, "Error al agregar a favoritos.", Toast.LENGTH_SHORT).show()
+            );
+        }
+    }
+
+    private void eliminarFavorito(Movie movie, int position) {
+        SQLiteDatabase dbWrite = databaseHelper.getWritableDatabase();
+        int rowsDeleted = dbWrite.delete(
+                FavoritesDatabaseHelper.TABLE_FAVORITOS,
+                "idUsuario=? AND idPelicula=?",
+                new String[]{idUsuario, movie.getId()}
+        );
+        dbWrite.close();
+
+        if (rowsDeleted > 0) {
+            mainHandler.post(() -> {
+                Toast.makeText(context, "Eliminado de favoritos: " + movie.getTitle(), Toast.LENGTH_SHORT).show();
+                movies.remove(position);
+                notifyItemRemoved(position);
+            });
+        } else {
+            mainHandler.post(() ->
+                    Toast.makeText(context, "Error al eliminar: " + movie.getTitle(), Toast.LENGTH_SHORT).show()
+            );
         }
     }
 }
