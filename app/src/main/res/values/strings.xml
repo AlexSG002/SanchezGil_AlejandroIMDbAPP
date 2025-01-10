@@ -11,8 +11,8 @@
     <string name="menu_favoritos">Favoritos</string>
     <string name="menu_buscar">Buscar Película</string>
     <string name="default_web_client_id">YOUR_CLIENT_ID_HERE</string>
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
+    <string name="buscar_fragment_label">Buscar Fragment</string>
+    <string name="PelisBuscadas_fragment_label">PelisBuscadas Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
@@ -52,4 +52,6 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -47,7 +47,8 @@ public class HomeFragment extends Fragment {
     private String idUsuario = FirebaseAuth.getInstance().getCurrentUser().getUid();
     private static final String BASE_URL = "https://imdb-com.p.rapidapi.com/";
     //private static final String API_KEY = "200ca2873dmsh3c28ce355613a89p1dd78cjsndb8f2f9c0b09";
-    private static final String API_KEY = "ab93ab0e94mshebd8e2eb069c3e5p12c6b7jsn40f5cdaf18f8";
+    //private static final String API_KEY = "ab93ab0e94mshebd8e2eb069c3e5p12c6b7jsn40f5cdaf18f8";
+    private static final String API_KEY = "8387dd50bamsh70639397777c48dp1f8dc5jsn8138e37a8f4f";
     private static final String HOST = "imdb-com.p.rapidapi.com";
     private static final String ENDPOINT_TOP10 = "title/get-top-meter?topMeterTitlesType=ALL";
     private static final String ENDPOINT_DESCRIPCION = "title/get-overview?tconst=";
@@ -72,7 +73,7 @@ public class HomeFragment extends Fragment {
         binding.recyclerView.setLayoutManager(layoutManager);
 
         cargarTopMovies();
-        cargarDescripciones();
+
 
 
         return root;
@@ -103,13 +104,16 @@ public class HomeFragment extends Fragment {
                         JsonObject dataObject = jsonObject.getAsJsonObject("data");
                         JsonObject titleObject = dataObject.getAsJsonObject("title");
                         JsonObject plotObject = titleObject.getAsJsonObject("plot");
+                        JsonObject ratingsObject = titleObject.getAsJsonObject("ratingsSummary");
+
 
                         String id = titleObject.get("id").getAsString();
                         String plotText = plotObject.getAsJsonObject("plotText").get("plainText").getAsString();
+                        String rating = ratingsObject.get("aggregateRating").getAsString();
                         Movie movieDesc = new Movie();
                         movieDesc.setId(id);
                         movieDesc.setDescripcion(plotText);
-
+                        movieDesc.setRating(rating);
                         List<Movie> peliculasDescripcion = new ArrayList<>();
 
                         peliculasDescripcion.add(movieDesc);
@@ -117,6 +121,7 @@ public class HomeFragment extends Fragment {
                             for (Movie m1 : peliculasDescripcion) {
                                 if (m.getId().equals(m1.getId())) {
                                    m.setDescripcion(m1.getDescripcion());
+                                   m.setRating(m1.getRating());
                                 }
                             }
                         }
@@ -167,7 +172,7 @@ public class HomeFragment extends Fragment {
                         JsonObject nodeObject = edgeObject.getAsJsonObject("node");
 
                         String id = nodeObject.get("id").getAsString();
-                        int rank = nodeObject.getAsJsonObject("meterRanking").get("currentRank").getAsInt();
+                        String rank = nodeObject.getAsJsonObject("meterRanking").get("currentRank").getAsString();
                         String titulo = nodeObject.getAsJsonObject("titleText").get("text").getAsString();
                         String imageUrl = nodeObject.getAsJsonObject("primaryImage").get("url").getAsString();
                         String mes = nodeObject.getAsJsonObject("releaseDate").get("month").getAsString();
@@ -196,6 +201,8 @@ public class HomeFragment extends Fragment {
                         if (finalMovies != null && !finalMovies.isEmpty()) {
                             MovieAdapter adapter = new MovieAdapter(getContext(), finalMovies, idUsuario, database, favoritos);
                             binding.recyclerView.setAdapter(adapter);
+
+                            cargarDescripciones();
                         } else {
                             Toast.makeText(getContext(), "No se pudieron obtener las películas", Toast.LENGTH_SHORT).show();
                         }

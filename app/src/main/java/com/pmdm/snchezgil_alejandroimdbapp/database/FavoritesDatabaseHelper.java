@@ -9,7 +9,7 @@ import androidx.annotation.Nullable;
 
 public class FavoritesDatabaseHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 4;
     private static final String DATABASE_NOMBRE = "Favoritos.db";
     public static final String TABLE_FAVORITOS = "t_favoritos";
 
@@ -21,13 +21,14 @@ public class FavoritesDatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
 
         db.execSQL("CREATE TABLE "+TABLE_FAVORITOS + "(" +
-                "idPelicula TEXT NOT NULL," +
-                "idUsuario TEXT NOT NULL,"+
-                "nombrePelicula TEXT NOT NULL ," +
-                "descripcionPelicula TEXT NOT NULL," +
-                "fechaLanzamiento TEXT NOT NULL," +
-                "rankingPelicula INTEGER NOT NULL," +
-                "caratulaURL TEXT NOT NULL," +
+                "idPelicula TEXT," +
+                "idUsuario TEXT,"+
+                "nombrePelicula TEXT ," +
+                "descripcionPelicula TEXT," +
+                "fechaLanzamiento TEXT," +
+                "rankingPelicula INTEGER," +
+                "ratingPelicula REAL," +
+                "caratulaURL TEXT," +
                 "PRIMARY KEY (idUsuario, idPelicula))");
     }
 
@@ -44,7 +45,8 @@ public class FavoritesDatabaseHelper extends SQLiteOpenHelper {
                                  String nombre,
                                  String descripcion,
                                  String fechaLanzamiento,
-                                 int ranking,
+                                 String ranking,
+                                 String ratingPelicula,
                                  String caratulaURL) {
 
         ContentValues valores = new ContentValues();
@@ -54,6 +56,7 @@ public class FavoritesDatabaseHelper extends SQLiteOpenHelper {
         valores.put("descripcionPelicula", descripcion);
         valores.put("fechaLanzamiento", fechaLanzamiento);
         valores.put("rankingPelicula", ranking);
+        valores.put("ratingPelicula", ratingPelicula);
         valores.put("caratulaURL", caratulaURL);
 
         return db.insert(TABLE_FAVORITOS, null, valores);

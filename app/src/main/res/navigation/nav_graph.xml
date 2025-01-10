@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/FirstFragment"
         android:name="com.pmdm.snchezgil_alejandroimdbapp.FirstFragment"
-        android:label="@string/first_fragment_label"
+        android:label="a"
         tools:layout="@layout/fragment_first" >
 
         <action
@@ -18,7 +18,7 @@
     <fragment
         android:id="@+id/SecondFragment"
         android:name="com.pmdm.snchezgil_alejandroimdbapp.SecondFragment"
-        android:label="@string/second_fragment_label"
+        android:label="n"
         tools:layout="@layout/fragment_second" >
 
         <action

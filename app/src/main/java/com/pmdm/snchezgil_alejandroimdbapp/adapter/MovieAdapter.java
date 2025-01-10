@@ -104,7 +104,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
 
     private void agregarFavorito(Movie movie, int position) {
         SQLiteDatabase dbWrite = databaseHelper.getWritableDatabase();
-        long result = databaseHelper.insertarFavorito(dbWrite, idUsuario, movie.getId(), movie.getTitle(), movie.getDescripcion(), movie.getFecha(), movie.getRank(), movie.getImageUrl());
+        long result = databaseHelper.insertarFavorito(dbWrite, idUsuario, movie.getId(), movie.getTitle(), movie.getDescripcion(), movie.getFecha(), movie.getRank(),movie.getRating() , movie.getImageUrl());
         dbWrite.close();
 
         if (result != -1) {

@@ -33,7 +33,7 @@ import java.util.concurrent.Executors;
 public class MovieDetailsActivity extends AppCompatActivity {
 
     private ImageView imagePosterLarge;
-    private TextView textTitle, textRank, textPlot, textDate;
+    private TextView textTitle, textRank, textPlot, textDate, textRating;
     private ExecutorService executorService;
     private Button buttonEnviar;
     private static final int CODIGO_PERMISO_LEER_CONTACTOS = 1;
@@ -53,6 +53,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         textRank = findViewById(R.id.textRank);
         textPlot = findViewById(R.id.textPlot);
         textDate = findViewById(R.id.textDate);
+        textRating = findViewById(R.id.textRating);
         buttonEnviar = findViewById(R.id.buttonEnviarSMS);
 
         launcherSeleccionarContacto = registerForActivityResult(
@@ -65,7 +66,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
                             if (idContacto != null) {
                                 String numTelefono = obtenerTelefono(idContacto);
                                 if (numTelefono != null && !numTelefono.isEmpty()) {
-                                    String textoSMS = "¡Te recomiendo la película: " + textTitle.getText().toString() + "!"+" Con rating: "+textRank.getText().toString();
+                                    String textoSMS = "¡Te recomiendo la película: " + textTitle.getText().toString() + "!"+" Con "+textRating.getText().toString();
                                     enviarSMS(numTelefono, textoSMS);
                                 } else {
                                     Toast.makeText(this, "El contacto no tiene número de teléfono.", Toast.LENGTH_SHORT).show();
@@ -98,6 +99,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
             textRank.setText("Rank: " + movie.getRank());
             textPlot.setText("Descripción: "+movie.getDescripcion());
             textDate.setText("Fecha de lanzamiento: "+movie.getFecha());
+            textRating.setText("Rating: "+movie.getRating());
 
             executorService.execute(() -> {
                 try {
