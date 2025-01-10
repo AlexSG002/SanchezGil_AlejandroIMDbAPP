@@ -66,7 +66,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
                             if (idContacto != null) {
                                 String numTelefono = obtenerTelefono(idContacto);
                                 if (numTelefono != null && !numTelefono.isEmpty()) {
-                                    String textoSMS = "¡Te recomiendo la película: " + textTitle.getText().toString() + "!"+" Con rating: "+textRank.getText().toString();
+                                    String textoSMS = "¡Te recomiendo la película: " + textTitle.getText().toString() + "!"+" Con "+textRating.getText().toString();
                                     enviarSMS(numTelefono, textoSMS);
                                 } else {
                                     Toast.makeText(this, "El contacto no tiene número de teléfono.", Toast.LENGTH_SHORT).show();

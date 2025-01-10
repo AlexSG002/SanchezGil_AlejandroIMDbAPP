@@ -21,5 +21,17 @@
         android:id="@+id/nav_buscar"
         android:name="com.pmdm.snchezgil_alejandroimdbapp.ui.slideshow.BuscarFragment"
         android:label="@string/menu_buscar"
-        tools:layout="@layout/fragment_buscar" />
+        tools:layout="@layout/fragment_buscar">
+        <action
+            android:id="@+id/action_buscarFragment_to_pelisBuscadas"
+            app:destination="@id/pelisBuscadas" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/pelisBuscadas"
+        android:name="com.pmdm.snchezgil_alejandroimdbapp.ui.slideshow.PelisBuscadas"
+        android:label="@string/PelisBuscadas_fragment_label"
+        tools:layout="@layout/fragment_pelis_buscadas" >
+    </fragment>
+
 </navigation>

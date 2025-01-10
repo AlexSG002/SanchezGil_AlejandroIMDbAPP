@@ -15,11 +15,17 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.navigation.NavController;
+import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.pmdm.snchezgil_alejandroimdbapp.R;
 import com.pmdm.snchezgil_alejandroimdbapp.databinding.FragmentBuscarBinding;
 import com.pmdm.snchezgil_alejandroimdbapp.models.Genero;
 import com.pmdm.snchezgil_alejandroimdbapp.models.Movie;
@@ -44,9 +50,9 @@ public class BuscarFragment extends Fragment {
     private Handler mainHandler;
     private static final String BASE_URL = "https://api.themoviedb.org/3/";
     private static final String ENDPOINT_GENEROS = "genre/movie/list?language=en";
-    private static String ENDPOINT_PELIS = "discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc";
+    private static String ENDPOINT_PELIS = "/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&primary_release_year=";
     private static String urlGenero = "&with_genres=";
-    private static String urlYear = "&year=";
+    private static String urlSortDesc = "&sort_by=popularity.desc";
     private static final String AUTHORIZATION = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjZTU5ODExZDEzZWViNjQzYWUxMzg5ZTM2MGExMDNkZCIsIm5iZiI6MTczNjUwMjMyMy4yMTQwMDAyLCJzdWIiOiI2NzgwZWMzMzE0MzFlMDU5MWFiYjJmYzQiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.ykP4qXAyJ40Io_luvUthjnYOawrFEMu-cMULOzsTwoQ";
     private static final String ACCEPT = "application/json";
     private EditText year;
@@ -72,16 +78,22 @@ public class BuscarFragment extends Fragment {
         buttonBuscar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String yearText = year.toString();
+                String yearText = year.getText().toString().trim();
                 String generoSeleccionado = spinnerGeneros.getSelectedItem().toString();
                 int idGeneroSeleccionado = 0;
                 for(Genero genero : generos){
                     if(genero.getNombre().equals(generoSeleccionado)){
                         idGeneroSeleccionado = genero.getId();
+                        break;
                     }
                 }
-                ENDPOINT_PELIS = ENDPOINT_PELIS+idGeneroSeleccionado+yearText;
-                cargarPeliculas();
+                if(yearText.isEmpty()){
+                    Toast.makeText(getContext(), "Ingrese un año válido.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                String url = ENDPOINT_PELIS+yearText+urlSortDesc+urlGenero+idGeneroSeleccionado;
+                cargarPeliculas(url);
             }
         });
 
@@ -161,10 +173,11 @@ public class BuscarFragment extends Fragment {
         });
     }
 
-    private void cargarPeliculas(){
+    private void cargarPeliculas(String urlPeliculas){
         executorService.execute(() ->{
             try {
-                String urlString = BASE_URL + ENDPOINT_PELIS;
+                String urlString = BASE_URL + urlPeliculas;
+                Log.d("URL",urlString);
                 URL url = new URL(urlString);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
@@ -178,7 +191,7 @@ public class BuscarFragment extends Fragment {
                     String response = convertStreamToString(conn.getInputStream());
                     conn.disconnect();
 
-                    Log.d("HomeFragment", "Response: " + response);
+                    Log.d("BuscarFragment", "Response: " + response);
 
                     Gson gson = new Gson();
                     JsonObject jsonObject = gson.fromJson(response, JsonObject.class);
@@ -191,8 +204,8 @@ public class BuscarFragment extends Fragment {
                         String title = jsonResultado.get("title").getAsString();
                         String id = jsonResultado.get("id").getAsString();
                         String overview = jsonResultado.get("overview").getAsString();
-                        Double vote_average = jsonResultado.get("vote_average").getAsDouble();
-                        String releaseDate = jsonResultado.get("releaseDate").getAsString();
+                        String vote_average = jsonResultado.get("vote_average").getAsString();
+                        String releaseDate = jsonResultado.get("release_date").getAsString();
                         String imageURL = "https://image.tmdb.org/t/p/w600_and_h900_bestv2" + jsonResultado.get("poster_path").getAsString();
 
                         Movie m = new Movie();
@@ -204,7 +217,25 @@ public class BuscarFragment extends Fragment {
                         m.setRating(vote_average);
                         m.setFecha(releaseDate);
                         m.setImageUrl(imageURL);
+
+                        peliculasFiltradas.add(m);
                     }
+
+                    mainHandler.post(() ->{
+                        if(!peliculasFiltradas.isEmpty()){
+
+                            ArrayList<Movie> peliculasArrayList = new ArrayList<>(peliculasFiltradas);
+
+                            Bundle bundle = new Bundle();
+
+                            bundle.putParcelableArrayList("peliculas", peliculasArrayList);
+
+                            NavController navController = NavHostFragment.findNavController(this);
+                            navController.navigate(R.id.action_buscarFragment_to_pelisBuscadas, bundle);
+                        }else{
+                            Toast.makeText(getContext(), "No se encontraron películas", Toast.LENGTH_SHORT).show();
+                        }
+                    });
 
                 }
 

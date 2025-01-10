@@ -96,12 +96,14 @@ public class FavoritosFragment extends Fragment {
                     int colDescripcion = cursor.getColumnIndex("descripcionPelicula");
                     int colFecha = cursor.getColumnIndex("fechaLanzamiento");
                     int colRanking = cursor.getColumnIndex("rankingPelicula");
+                    int colRating = cursor.getColumnIndex("ratingPelicula");
                     int colCaratula = cursor.getColumnIndex("caratulaURL");
                     String idPelicula = cursor.getString(colIdPelicula);
                     String titulo = cursor.getString(colTitulo);
                     String descripcion = cursor.getString(colDescripcion);
                     String fecha = cursor.getString(colFecha);
-                    int ranking = cursor.getInt(colRanking);
+                    String ranking = cursor.getString(colRanking);
+                    String rating = cursor.getString(colRating);
                     String caratula = cursor.getString(colCaratula);
 
                     Movie movie = new Movie();
@@ -110,6 +112,7 @@ public class FavoritosFragment extends Fragment {
                     movie.setDescripcion(descripcion);
                     movie.setFecha(fecha);
                     movie.setRank(ranking);
+                    movie.setRating(rating);
                     movie.setImageUrl(caratula);
                     pelisFavoritas.add(movie);
                 } while (cursor.moveToNext());

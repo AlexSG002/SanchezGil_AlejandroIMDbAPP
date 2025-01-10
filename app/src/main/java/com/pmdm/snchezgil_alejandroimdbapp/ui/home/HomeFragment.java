@@ -73,7 +73,7 @@ public class HomeFragment extends Fragment {
         binding.recyclerView.setLayoutManager(layoutManager);
 
         cargarTopMovies();
-        cargarDescripciones();
+
 
 
         return root;
@@ -109,7 +109,7 @@ public class HomeFragment extends Fragment {
 
                         String id = titleObject.get("id").getAsString();
                         String plotText = plotObject.getAsJsonObject("plotText").get("plainText").getAsString();
-                        double rating = ratingsObject.get("aggregateRating").getAsDouble();
+                        String rating = ratingsObject.get("aggregateRating").getAsString();
                         Movie movieDesc = new Movie();
                         movieDesc.setId(id);
                         movieDesc.setDescripcion(plotText);
@@ -201,6 +201,8 @@ public class HomeFragment extends Fragment {
                         if (finalMovies != null && !finalMovies.isEmpty()) {
                             MovieAdapter adapter = new MovieAdapter(getContext(), finalMovies, idUsuario, database, favoritos);
                             binding.recyclerView.setAdapter(adapter);
+
+                            cargarDescripciones();
                         } else {
                             Toast.makeText(getContext(), "No se pudieron obtener las películas", Toast.LENGTH_SHORT).show();
                         }

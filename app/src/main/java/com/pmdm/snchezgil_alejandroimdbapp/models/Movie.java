@@ -7,7 +7,7 @@ public class Movie implements Parcelable {
     private String imageUrl;
     private String title;
     private String rank;
-    private double rating;
+    private String rating;
     private String id;
     private String descripcion;
     private String fecha;
@@ -18,7 +18,7 @@ public class Movie implements Parcelable {
         imageUrl = in.readString();
         title = in.readString();
         rank = in.readString();
-        rating = in.readDouble();
+        rating = in.readString();
         id = in.readString();
         descripcion = in.readString();
         fecha = in.readString();
@@ -45,8 +45,8 @@ public class Movie implements Parcelable {
     public String getRank() {return rank;}
     public void setRank(String rank) {this.rank = rank;}
 
-    public double getRating() {return rating;}
-    public void setRating(double rating) {this.rating = rating;}
+    public String getRating() {return rating;}
+    public void setRating(String rating) {this.rating = rating;}
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -72,7 +72,7 @@ public class Movie implements Parcelable {
         parcel.writeString(imageUrl);
         parcel.writeString(title);
         parcel.writeString(rank);
-        parcel.writeDouble(rating);
+        parcel.writeString(rating);
         parcel.writeString(id);
         parcel.writeString(descripcion);
         parcel.writeString(fecha);

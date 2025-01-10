@@ -9,7 +9,7 @@ import androidx.annotation.Nullable;
 
 public class FavoritesDatabaseHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
     private static final String DATABASE_NOMBRE = "Favoritos.db";
     public static final String TABLE_FAVORITOS = "t_favoritos";
 
@@ -27,7 +27,7 @@ public class FavoritesDatabaseHelper extends SQLiteOpenHelper {
                 "descripcionPelicula TEXT," +
                 "fechaLanzamiento TEXT," +
                 "rankingPelicula INTEGER," +
-                "ratingPelicula INTEGER," +
+                "ratingPelicula REAL," +
                 "caratulaURL TEXT," +
                 "PRIMARY KEY (idUsuario, idPelicula))");
     }
@@ -46,7 +46,7 @@ public class FavoritesDatabaseHelper extends SQLiteOpenHelper {
                                  String descripcion,
                                  String fechaLanzamiento,
                                  String ranking,
-                                 double ratingPelicula,
+                                 String ratingPelicula,
                                  String caratulaURL) {
 
         ContentValues valores = new ContentValues();
