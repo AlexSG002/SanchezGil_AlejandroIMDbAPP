@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -20,6 +22,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.pmdm.snchezgil_alejandroimdbapp.databinding.FragmentBuscarBinding;
 import com.pmdm.snchezgil_alejandroimdbapp.models.Genero;
+import com.pmdm.snchezgil_alejandroimdbapp.models.Movie;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -41,9 +44,13 @@ public class BuscarFragment extends Fragment {
     private Handler mainHandler;
     private static final String BASE_URL = "https://api.themoviedb.org/3/";
     private static final String ENDPOINT_GENEROS = "genre/movie/list?language=en";
-    private static final String ENDPOINT_PELIS = "search/movie?include_adult=false&language=en-US&page=1";
+    private static String ENDPOINT_PELIS = "discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc";
+    private static String urlGenero = "&with_genres=";
+    private static String urlYear = "&year=";
     private static final String AUTHORIZATION = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjZTU5ODExZDEzZWViNjQzYWUxMzg5ZTM2MGExMDNkZCIsIm5iZiI6MTczNjUwMjMyMy4yMTQwMDAyLCJzdWIiOiI2NzgwZWMzMzE0MzFlMDU5MWFiYjJmYzQiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.ykP4qXAyJ40Io_luvUthjnYOawrFEMu-cMULOzsTwoQ";
     private static final String ACCEPT = "application/json";
+    private EditText year;
+    private Button buttonBuscar;
     private static List<Genero> generos = new ArrayList<Genero>();
     private Spinner spinnerGeneros;
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -57,8 +64,28 @@ public class BuscarFragment extends Fragment {
         mainHandler = new Handler(Looper.getMainLooper());
 
         spinnerGeneros = binding.spinnerGeneros;
+        year = binding.editTextNumber;
+        buttonBuscar = binding.buttonBuscar;
 
         cargarGeneros();
+
+        buttonBuscar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String yearText = year.toString();
+                String generoSeleccionado = spinnerGeneros.getSelectedItem().toString();
+                int idGeneroSeleccionado = 0;
+                for(Genero genero : generos){
+                    if(genero.getNombre().equals(generoSeleccionado)){
+                        idGeneroSeleccionado = genero.getId();
+                    }
+                }
+                ENDPOINT_PELIS = ENDPOINT_PELIS+idGeneroSeleccionado+yearText;
+                cargarPeliculas();
+            }
+        });
+
+
 
         return root;
     }
@@ -155,7 +182,29 @@ public class BuscarFragment extends Fragment {
 
                     Gson gson = new Gson();
                     JsonObject jsonObject = gson.fromJson(response, JsonObject.class);
+                    JsonArray resultsArray = jsonObject.getAsJsonArray("results");
 
+                    List<Movie> peliculasFiltradas = new ArrayList<>();
+
+                    for(JsonElement resultsElement : resultsArray){
+                        JsonObject jsonResultado = resultsElement.getAsJsonObject();
+                        String title = jsonResultado.get("title").getAsString();
+                        String id = jsonResultado.get("id").getAsString();
+                        String overview = jsonResultado.get("overview").getAsString();
+                        Double vote_average = jsonResultado.get("vote_average").getAsDouble();
+                        String releaseDate = jsonResultado.get("releaseDate").getAsString();
+                        String imageURL = "https://image.tmdb.org/t/p/w600_and_h900_bestv2" + jsonResultado.get("poster_path").getAsString();
+
+                        Movie m = new Movie();
+
+                        m.setId(id);
+                        m.setTitle(title);
+                        m.setDescripcion(overview);
+                        m.setRank("Fuera del top 10");
+                        m.setRating(vote_average);
+                        m.setFecha(releaseDate);
+                        m.setImageUrl(imageURL);
+                    }
 
                 }
 

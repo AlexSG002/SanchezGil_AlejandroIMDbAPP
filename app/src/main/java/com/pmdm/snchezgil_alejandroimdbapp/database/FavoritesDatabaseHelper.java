@@ -45,7 +45,7 @@ public class FavoritesDatabaseHelper extends SQLiteOpenHelper {
                                  String nombre,
                                  String descripcion,
                                  String fechaLanzamiento,
-                                 int ranking,
+                                 String ranking,
                                  double ratingPelicula,
                                  String caratulaURL) {
 

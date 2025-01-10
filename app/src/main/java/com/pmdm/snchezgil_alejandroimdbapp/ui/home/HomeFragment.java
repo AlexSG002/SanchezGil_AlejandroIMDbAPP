@@ -172,7 +172,7 @@ public class HomeFragment extends Fragment {
                         JsonObject nodeObject = edgeObject.getAsJsonObject("node");
 
                         String id = nodeObject.get("id").getAsString();
-                        int rank = nodeObject.getAsJsonObject("meterRanking").get("currentRank").getAsInt();
+                        String rank = nodeObject.getAsJsonObject("meterRanking").get("currentRank").getAsString();
                         String titulo = nodeObject.getAsJsonObject("titleText").get("text").getAsString();
                         String imageUrl = nodeObject.getAsJsonObject("primaryImage").get("url").getAsString();
                         String mes = nodeObject.getAsJsonObject("releaseDate").get("month").getAsString();

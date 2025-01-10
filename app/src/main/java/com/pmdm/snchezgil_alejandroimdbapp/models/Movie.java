@@ -6,7 +6,7 @@ import android.os.Parcelable;
 public class Movie implements Parcelable {
     private String imageUrl;
     private String title;
-    private int rank;
+    private String rank;
     private double rating;
     private String id;
     private String descripcion;
@@ -17,7 +17,7 @@ public class Movie implements Parcelable {
     protected Movie(Parcel in) {
         imageUrl = in.readString();
         title = in.readString();
-        rank = in.readInt();
+        rank = in.readString();
         rating = in.readDouble();
         id = in.readString();
         descripcion = in.readString();
@@ -42,8 +42,8 @@ public class Movie implements Parcelable {
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
 
-    public int getRank() {return rank;}
-    public void setRank(int rank) {this.rank = rank;}
+    public String getRank() {return rank;}
+    public void setRank(String rank) {this.rank = rank;}
 
     public double getRating() {return rating;}
     public void setRating(double rating) {this.rating = rating;}
@@ -71,7 +71,7 @@ public class Movie implements Parcelable {
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeString(imageUrl);
         parcel.writeString(title);
-        parcel.writeInt(rank);
+        parcel.writeString(rank);
         parcel.writeDouble(rating);
         parcel.writeString(id);
         parcel.writeString(descripcion);
