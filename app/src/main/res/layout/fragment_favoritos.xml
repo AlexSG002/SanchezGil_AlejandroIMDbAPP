@@ -8,5 +8,11 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewFavoritos"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="600dp" />
+
+    <Button
+        android:id="@+id/buttonCompartir"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Compartir" />
 </LinearLayout>

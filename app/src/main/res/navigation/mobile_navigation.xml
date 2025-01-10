@@ -13,13 +13,13 @@
 
     <fragment
         android:id="@+id/nav_favoritos"
-        android:name="com.pmdm.snchezgil_alejandroimdbapp.ui.gallery.GalleryFragment"
+        android:name="com.pmdm.snchezgil_alejandroimdbapp.ui.gallery.FavoritosFragment"
         android:label="@string/menu_favoritos"
-        tools:layout="@layout/fragment_gallery" />
+        tools:layout="@layout/fragment_favoritos" />
 
     <fragment
         android:id="@+id/nav_slideshow"
-        android:name="com.pmdm.snchezgil_alejandroimdbapp.ui.slideshow.SlideshowFragment"
-        android:label="@string/menu_slideshow"
-        tools:layout="@layout/fragment_slideshow" />
+        android:name="com.pmdm.snchezgil_alejandroimdbapp.ui.slideshow.BuscarFragment"
+        android:label="@string/menu_buscar"
+        tools:layout="@layout/fragment_buscar" />
 </navigation>

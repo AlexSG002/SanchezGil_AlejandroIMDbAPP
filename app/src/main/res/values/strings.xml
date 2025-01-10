@@ -9,9 +9,8 @@
 
     <string name="menu_Top10">Top 10</string>
     <string name="menu_favoritos">Favoritos</string>
-    <string name="menu_slideshow">Slideshow</string>
+    <string name="menu_buscar">Buscar Película</string>
     <string name="default_web_client_id">YOUR_CLIENT_ID_HERE</string>
-    <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
