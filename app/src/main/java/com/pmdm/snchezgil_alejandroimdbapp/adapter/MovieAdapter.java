@@ -105,12 +105,17 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
             return true;
         });
     }
-
+    //Método que sirve para mostrar en pantalla un número determinado de objetos en este caso de tipo movie.
+    //Por lo que depende del tamaño de la lista de películas y en caso de ser nulo pues es 0.
     @Override
     public int getItemCount(){
-        return movies != null ? movies.size() : 0;
+        if (movies != null) {
+            return movies.size();
+        } else {
+            return 0;
+        }
     }
-
+    //Muestra el ViewHolder con el elemento que queremos que muestre que son las caratulas en el RecyclerView
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView posterImageView;
         public ViewHolder(@NonNull View itemView){
