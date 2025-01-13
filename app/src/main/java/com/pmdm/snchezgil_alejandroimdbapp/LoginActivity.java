@@ -28,6 +28,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
 public class LoginActivity extends AppCompatActivity {
+    //Declaramos las variables de Firebase y GoogleSignInClient.
     private FirebaseAuth mAuth;
     private GoogleSignInClient gClient;
 
@@ -36,15 +37,19 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
+        //Obtenemos la instancia de Firebase.
         mAuth = FirebaseAuth.getInstance();
+        //Declaramos una variable de tipo GoogleSignInOptions y la inicializamos al inicio de sesión por defecto.
         GoogleSignInOptions gOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestIdToken(getString(R.string.default_web_client_id)).requestEmail().build();
+        //Inicializamos la variable de GoogleSignInClient utilizando las opciones de inicio de sesión por defecto.
         gClient = GoogleSignIn.getClient(this, gOptions);
-
+        //Declaramos e inicializamos la variable usuarioActual a el usuario que recogemos con la variable de Firebase.
         FirebaseUser usuarioActual = mAuth.getCurrentUser();
+        //Comprobamos que el usuario no sea nulo y navegamos al main.
         if (usuarioActual != null){
             irAMain();
         }
-
+        //Launcher para lanzar la pestaña de selección de cuenta de Google.
         ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 new ActivityResultCallback<ActivityResult>() {
@@ -64,17 +69,20 @@ public class LoginActivity extends AppCompatActivity {
                         }
                     }
                 });
-
+        //Declaramos e inicializamos la variable botón.
         Button button = findViewById(R.id.sign_in_button);
+        //Le añadimos el OnClickListener.
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //Declaramos e incializamos el intent a la pestaña de selección de cuentas de google de gClient.
                 Intent signInIntent = gClient.getSignInIntent();
+                //Utilizando el launcher lanzamos el intent de inicio de sesión.
                 activityResultLauncher.launch(signInIntent);
             }
         });
     }
-
+    //Método para obtener las credenciales de Google e iniciar sesión en Firebase.
     private void autentificacionFirebaseGoogle(String idToken) {
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
         mAuth.signInWithCredential(credential)
@@ -89,13 +97,13 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 });
     }
-
+    //Método para ir al Main.
     private void irAMain(){
         finish();
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         startActivity(intent);
     }
-
+    //Método que sirve par ir directamente al main en caso de que el usuario no haya cerrado la sesión.
     @Override
     public void onStart() {
         super.onStart();

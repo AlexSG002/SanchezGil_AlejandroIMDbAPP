@@ -28,7 +28,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
-
+    //Declaramos las variables necesarias.
     private Context context;
     private List<Movie> movies;
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -46,6 +46,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
 
     }
 
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType){
@@ -55,7 +56,9 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position){
+        //Declaramos una instancia de película y la inicializamos a la posición obtenida de la lista de películas que nos pasan como argumento.
         Movie movie = movies.get(position);
+        //Por cada película de la lista recibida cargamos la imagen.
         executorService.execute(() -> {
             try {
                 URL url = new URL(movie.getImageUrl());
@@ -66,20 +69,34 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
                 mainHandler.post(() -> holder.posterImageView.setImageBitmap(bitmap));
             } catch (Exception e) {
                 e.printStackTrace();
+                //Imagen por defecto que no debería de llegarse a ver en ningún momento porque tengo la excepción manejada con nulos en otra parte con otra carátula.
                 mainHandler.post(() -> holder.posterImageView.setImageResource(R.drawable.ic_launcher_foreground));
             }
         });
-
+        //Obtenemos del ViewHolder el item, es decir el objeto película que aparece en la lista del recycler view.
+        //Le damos un onClickListener para que abra los detalles de la película con un intent.
         holder.itemView.setOnClickListener(v -> {
-            Intent intent = new Intent(context, MovieDetailsActivity.class);
-            intent.putExtra("MOVIE", movie);
-            context.startActivity(intent);
+            if(movie.isCargada()) {
+                Intent intent = new Intent(context, MovieDetailsActivity.class);
+                intent.putExtra("MOVIE", movie);
+                context.startActivity(intent);
+            }else{
+                Toast.makeText(context, "Cargando datos, por favor espera...", Toast.LENGTH_SHORT).show();
+            }
         });
-
+        //También añadiremos un onLongClickListener.
         holder.itemView.setOnLongClickListener(v -> {
             executorService.execute(() -> {
+                //Si no estamos en favoritos y los detalles de la película han cargado la agregamos a favoritos.
                 if (!favoritos) {
-                    agregarFavorito(movie, holder.getAdapterPosition());
+                    if(movie.isCargada()) {
+                        agregarFavorito(movie, holder.getAdapterPosition());
+                    }else{
+                        mainHandler.post(() ->
+                        Toast.makeText(context, "Cargando datos, por favor espera... ",Toast.LENGTH_SHORT).show()
+                        );
+                    }
+                    //Si no estamos en favoritos la borramos.
                 } else {
                     eliminarFavorito(movie, holder.getAdapterPosition());
                 }
@@ -101,7 +118,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
             posterImageView = itemView.findViewById(R.id.posterImageView);
         }
     }
-
+    //Método para agregar los favoritos utilizando la base de datos, lo insertamos con el método de la clase de la base de datos.
     private void agregarFavorito(Movie movie, int position) {
         SQLiteDatabase dbWrite = databaseHelper.getWritableDatabase();
         long result = databaseHelper.insertarFavorito(dbWrite, idUsuario, movie.getId(), movie.getTitle(), movie.getDescripcion(), movie.getFecha(), movie.getRank(),movie.getRating() , movie.getImageUrl());
@@ -113,11 +130,11 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
             );
         } else {
             mainHandler.post(() ->
-                    Toast.makeText(context, "Error al agregar a favoritos.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Error al agregar a favoritos, comprueba que no tengas ya la película añadida.", Toast.LENGTH_SHORT).show()
             );
         }
     }
-
+    //Método para eliminar favoritos, le hacemos una consulta a la base de datos y borramos la película cuyo usuario e id de película corresponda.
     private void eliminarFavorito(Movie movie, int position) {
         SQLiteDatabase dbWrite = databaseHelper.getWritableDatabase();
         int rowsDeleted = dbWrite.delete(
