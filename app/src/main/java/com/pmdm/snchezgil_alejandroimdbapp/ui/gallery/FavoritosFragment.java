@@ -2,7 +2,9 @@ package com.pmdm.snchezgil_alejandroimdbapp.ui.gallery;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -39,7 +41,7 @@ import java.util.concurrent.Executors;
 import com.google.gson.Gson;
 
 public class FavoritosFragment extends Fragment {
-
+    //Declaramos variables
     private FragmentFavoritosBinding binding;
     private ExecutorService executorService;
     private Handler mainHandler;
@@ -61,36 +63,37 @@ public class FavoritosFragment extends Fragment {
 
         GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 2);
         binding.recyclerViewFavoritos.setLayoutManager(layoutManager);
-
+        //Utilizamos ViewBinding para localizar los elementos gráficos
         buttonCompartir = binding.buttonCompartir;
-
+        //Se ejecutará un método para solicitar los permisos y compartir el json.
         buttonCompartir.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 solicitarPermisosBluetooth();
             }
         });
-
+        //Recuperamos la base de datos para cargar las peliculas
         database = new FavoritesDatabaseHelper(requireContext());
 
         cargarFavoritosDesdeBD();
 
         return root;
     }
-
+    //Método para cargar las peliculas en favoritos desde la base de datos.
     private void cargarFavoritosDesdeBD() {
         executorService.execute(() -> {
             SQLiteDatabase db = database.getReadableDatabase();
-
+            //Con un cursor creamos una consulta que iremos recorriendo, la limité a 10 porque limité los favoritos a 10.
             Cursor cursor = db.rawQuery(
                     "SELECT * FROM " + FavoritesDatabaseHelper.TABLE_FAVORITOS + " WHERE idUsuario=? LIMIT 10",
                     new String[]{idUsuario}
             );
-
+            //Limpiamos la lista cada vez que se carguen nuevos favoritos.
             pelisFavoritas.clear();
-
+            //Comprobamos que el resultado del cursor no sea nulo.
             if (cursor != null && cursor.moveToFirst()) {
                 do {
+                    //Rescatamos los datos.
                     int colIdPelicula = cursor.getColumnIndex("idPelicula");
                     int colTitulo = cursor.getColumnIndex("nombrePelicula");
                     int colDescripcion = cursor.getColumnIndex("descripcionPelicula");
@@ -105,7 +108,7 @@ public class FavoritosFragment extends Fragment {
                     String ranking = cursor.getString(colRanking);
                     String rating = cursor.getString(colRating);
                     String caratula = cursor.getString(colCaratula);
-
+                    //Creamos un nuevo objeto película y lo agregamos a una lista.
                     Movie movie = new Movie();
                     movie.setId(String.valueOf(idPelicula));
                     movie.setTitle(titulo);
@@ -114,15 +117,17 @@ public class FavoritosFragment extends Fragment {
                     movie.setRank(ranking);
                     movie.setRating(rating);
                     movie.setImageUrl(caratula);
+                    movie.setCargada(true);
                     pelisFavoritas.add(movie);
                 } while (cursor.moveToNext());
             }
-
+            //Si el cursor no es nulo lo cerramos.
             if (cursor != null) {
                 cursor.close();
             }
+            //Cerramos la base de datos.
             db.close();
-
+        //En el hilo principal con mainHandler inicializamos una nueva instancia del MovieAdapter
             mainHandler.post(() -> {
                 if (!pelisFavoritas.isEmpty()) {
                     MovieAdapter adapter = new MovieAdapter(getContext(), pelisFavoritas, idUsuario, database, favoritos);
@@ -140,7 +145,8 @@ public class FavoritosFragment extends Fragment {
         executorService.shutdown();
         binding = null;
     }
-
+    //Método para solicitar los permisos de bluetooth, ya que dependiendo de la api es diferente,
+    //Comprueba la api en la que estamos para solicitar unos permisos u otros.
     private void solicitarPermisosBluetooth() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED ||
@@ -149,7 +155,7 @@ public class FavoritosFragment extends Fragment {
                         new String[]{
                                 Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN}, CODIGO_PERMISOS_BLUETOOTH);
             } else {
-                compartirFavoritos();
+                activarBluetoothYCompartir();
             }
         } else {
             if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED ||
@@ -157,11 +163,12 @@ public class FavoritosFragment extends Fragment {
                 ActivityCompat.requestPermissions(requireActivity(),
                         new String[]{Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN}, CODIGO_PERMISOS_BLUETOOTH);
             } else {
-                compartirFavoritos();
+                activarBluetoothYCompartir();
             }
         }
     }
 
+    //Método que se ejecuta al recibir la respuesta de si se han concedido o no los permisos.
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
@@ -177,13 +184,29 @@ public class FavoritosFragment extends Fragment {
             }
 
             if (permisosConcedidos) {
-                compartirFavoritos();
+                activarBluetoothYCompartir();
             } else {
                 Toast.makeText(getContext(), "Permisos de Bluetooth necesarios para compartir.", Toast.LENGTH_SHORT).show();
             }
         }
     }
+    //Método para activar el bluetooth utilizando bluetooth adapter en caso de tener el bluetooth desactivado.
+    private void activarBluetoothYCompartir() {
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (bluetoothAdapter == null) {
+            Toast.makeText(getContext(), "El dispositivo no soporta Bluetooth", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        if (!bluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, CODIGO_PERMISOS_BLUETOOTH);
+            Toast.makeText(getContext(), "Solicitando activación de Bluetooth...", Toast.LENGTH_SHORT).show();
+        } else {
+            compartirFavoritos();
+        }
+    }
+    //Método para convertir las favoritas a un texto json y mostrarlo en un AlertDialog al usuario.
     private void compartirFavoritos() {
         if(pelisFavoritas.isEmpty()){
             Toast.makeText(getContext(), "No hay peliculas guardadas en favoritos para compartir.",Toast.LENGTH_SHORT).show();

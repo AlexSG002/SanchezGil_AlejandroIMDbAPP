@@ -1,5 +1,5 @@
 package com.pmdm.snchezgil_alejandroimdbapp.models;
-
+//Clase género de solo datos.
 public class Genero {
     private int id;
     private String nombre;

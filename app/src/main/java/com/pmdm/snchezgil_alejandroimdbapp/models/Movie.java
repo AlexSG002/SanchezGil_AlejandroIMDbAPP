@@ -2,7 +2,7 @@ package com.pmdm.snchezgil_alejandroimdbapp.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-
+//Clase movie de solo datos y parcelable.
 public class Movie implements Parcelable {
     private String imageUrl;
     private String title;
@@ -11,8 +11,11 @@ public class Movie implements Parcelable {
     private String id;
     private String descripcion;
     private String fecha;
+    private boolean cargada;
 
-    public Movie() {}
+    public Movie() {
+        this.cargada = false;
+    }
 
     protected Movie(Parcel in) {
         imageUrl = in.readString();
@@ -61,6 +64,14 @@ public class Movie implements Parcelable {
 
     public String getFecha() { return fecha; }
     public void setFecha(String fecha) { this.fecha = fecha; }
+
+    public boolean isCargada() {
+        return cargada;
+    }
+
+    public void setCargada(boolean cargada) {
+        this.cargada = cargada;
+    }
 
     @Override
     public int describeContents() {

@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class PelisBuscadas extends Fragment {
-
+    //Declaramos las variables que vamos a utilizar.
     private FragmentPelisBuscadasBinding binding;
     private ExecutorService executorService;
     private Handler mainHandler;
@@ -38,7 +38,7 @@ public class PelisBuscadas extends Fragment {
     public PelisBuscadas() {
 
     }
-
+    //Obtenemos la lista de pelis filtradas como argumento y la pasamos como parcelable para añadirla a favoritos.
     public static PelisBuscadas newInstance(ArrayList<Movie> pelisFiltradas) {
         PelisBuscadas fragment = new PelisBuscadas();
         Bundle args = new Bundle();
@@ -51,11 +51,13 @@ public class PelisBuscadas extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //Obtenemos la instancia del usuario.
             idUsuario = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
+            //Si los argumentos obtenidos de la listas de pelíoculas no es nulo establecemos el parcelable de películas.
             if(getArguments()!=null){
                 ArrayList<Movie> peliculasArrayList = getArguments().getParcelableArrayList("peliculas");
                 if(peliculasArrayList != null){
+                    //Y añadimos todas las películas al array list para cargarlas.
                     pelis.addAll(peliculasArrayList);
                 }
         }
@@ -68,7 +70,7 @@ public class PelisBuscadas extends Fragment {
 
         binding = FragmentPelisBuscadasBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-
+        //Inicializamos el executor, el mainHandler, la base de datos y configuramos el recyclerview para el adapter.
         executorService = Executors.newSingleThreadExecutor();
         mainHandler = new Handler(Looper.getMainLooper());
 
@@ -80,7 +82,7 @@ public class PelisBuscadas extends Fragment {
         return root;
     }
 
-
+    //Método para inicializar el adapter.
     private void configurarRecyclerView() {
         binding.recyclerViewBuscar.setLayoutManager(new LinearLayoutManager(requireContext()));
         if(pelis!=null && !pelis.isEmpty()) {

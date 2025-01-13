@@ -31,7 +31,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MovieDetailsActivity extends AppCompatActivity {
-
+    //Declaramos la variables que vamos a utilizar.
     private ImageView imagePosterLarge;
     private TextView textTitle, textRank, textPlot, textDate, textRating;
     private ExecutorService executorService;
@@ -47,7 +47,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_details);
-
+        //Inicializamos las variables de los textos, la imagen y el botón de enviar a los elementos gráficos de la Activity.
         imagePosterLarge = findViewById(R.id.imagePosterLarge);
         textTitle = findViewById(R.id.textTitle);
         textRank = findViewById(R.id.textRank);
@@ -55,7 +55,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         textDate = findViewById(R.id.textDate);
         textRating = findViewById(R.id.textRating);
         buttonEnviar = findViewById(R.id.buttonEnviarSMS);
-
+        //Launcher de intent para que aparezca la lista de contactos.
         launcherSeleccionarContacto = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -76,11 +76,11 @@ public class MovieDetailsActivity extends AppCompatActivity {
                     }
                 }
         );
-
+        //Funcionalidad de botón enviar
         buttonEnviar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                //Comprobamos si tenemos permisos de contactos, en caso de no tenerlos los solicita.
                 if (ContextCompat.checkSelfPermission(MovieDetailsActivity.this, android.Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(MovieDetailsActivity.this, new String[]{android.Manifest.permission.READ_CONTACTS}, CODIGO_PERMISO_LEER_CONTACTOS);
                 }else{
@@ -89,18 +89,23 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
             }
         });
-
+        //Declaramos un executor para la imagen de la pelicula
         executorService = Executors.newSingleThreadExecutor();
-
+        //Obtenemos los datos del parcelable
         Movie movie = getIntent().getParcelableExtra("MOVIE");
-
+        //Comprobamos que la película y el título no sean nulos.
         if (movie != null) {
-            textTitle.setText(movie.getTitle() != null ? movie.getTitle() : "Sin título");
+            if (movie.getTitle() != null) {
+                textTitle.setText(movie.getTitle());
+            } else {
+                textTitle.setText("Sin título");
+            }
+            //Establecemos los datos obtenidos del parcelable.
             textRank.setText("Rank: " + movie.getRank());
             textPlot.setText("Descripción: "+movie.getDescripcion());
             textDate.setText("Fecha de lanzamiento: "+movie.getFecha());
             textRating.setText("Rating: "+movie.getRating());
-
+            //Obtenemos la caratula.
             executorService.execute(() -> {
                 try {
                     URL url = new URL(movie.getImageUrl());
@@ -123,12 +128,13 @@ public class MovieDetailsActivity extends AppCompatActivity {
         executorService.shutdown();
     }
 
+    //Método que se ejecuta al obtener el resultado de solicitar los contactos
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
+        //Si se han otorgado los contactos lanzamos el selector de contactos, en caso contrario nos lanza un toast.
         if (requestCode == CODIGO_PERMISO_LEER_CONTACTOS) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 lanzarSelectorContactos();
@@ -136,7 +142,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 Toast.makeText(this, "Permiso de lectura de contactos denegado.", Toast.LENGTH_SHORT).show();
             }
         }
-
+        //Lo miosmo pero para enviar sms.
         if (requestCode == CODIGO_PERMISO_ENVIAR_SMS) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 abrirAppSMS(numeroSMSPendiente, textoSMSPendiente);
@@ -146,12 +152,12 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
 
     }
-
+    //Lanzamos el intent de seleccionar contactos con Content_URI y el launcher que hemos definido antes.
     private void lanzarSelectorContactos() {
         Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
         launcherSeleccionarContacto.launch(intent);
     }
-
+    //Obtenemos el id del contacto como en la práctica de SMSToContact.
     private String obtenerIdContacto(Uri contactUri) {
         String idContacto = null;
         Cursor cursor = getContentResolver().query(contactUri, null, null, null, null);
@@ -164,7 +170,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
         return idContacto;
     }
-
+    //Lo mismo para el teléfono.
     private String obtenerTelefono(String contactId) {
         String numTelefono = null;
         Cursor cursorTelefono = getContentResolver().query(
@@ -183,11 +189,11 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
         return numTelefono;
     }
-
+    //Método para enviar el sms con el número de teléfono y el texto.
     private void enviarSMS(String numero, String texto) {
         numeroSMSPendiente = numero;
         textoSMSPendiente = texto;
-
+        //Comprobnamos que hemos solicitado los permisos de sms.
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
@@ -199,7 +205,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
             abrirAppSMS(numero, texto);
         }
     }
-
+    //Método para abrir la app de sms con el intent de ACTION_SENDTO.
     private void abrirAppSMS(String numero, String texto) {
         if (numero == null || texto == null || numero.isEmpty() || texto.isEmpty()) {
             Toast.makeText(this, "No se tiene número o texto para enviar.", Toast.LENGTH_SHORT).show();
@@ -207,6 +213,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
 
         Intent smsIntent = new Intent(Intent.ACTION_SENDTO);
+        //Establecemos los datos para abrir el contacto y mostrar el mensaje.
         smsIntent.setData(Uri.parse("smsto:" + numero));
         smsIntent.putExtra("sms_body", texto);
         startActivity(smsIntent);
